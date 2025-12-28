@@ -1,13 +1,65 @@
-import React from "react";
+import React, { useContext } from "react";
+import { useState } from "react";
+import { apiClient } from "../utils/api";
+import { toast } from "react-toastify";
+import { AppContext } from "../context/AppContext";
 
 const Login = () => {
+
+const navigate = useNavigate();
+
+ const [state, setState] = useState("Sign Up");
+ const [name, setName] = useState("");
+ const [email, setEmail] = useState("");
+ const [password, setPassword] = useState("");
+ const  {token, setToken } = useContext(AppContext)
+
+
+ const handleRegister = async () => {
+  try { 
+    const {data} = await apiClient.post("/user/register", {
+      name,email,password,
+    });
+
+    if  ( data.success ) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("id", data.user._id);
+      setToken(data.token);
+      toast.success("Registered Successfully");
+    } else {
+      toast.error(data.message || "regstration failed");
+    } 
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+  
+ }
+
+
+ const handieLogin = async () => {
+  try {
+    const { data } = await apiClient.post("/user/login",{ email, password });
+    if (data.success) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("id", data.user._id);
+      setToken(data.token);
+      toast.success("Login Successful");
+      navigate("/");
+    } else {
+      toast.error(data.message || "Login failed");
+    }
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+ };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
 
         {/* Title */}
         <h2 className="text-3xl font-bold text-center text-indigo-600">
-          Login
+          {state === "Sign Up" ? "Create an Account" : "Welcome Back"}
         </h2>
 
         {/* Form */}
